@@ -3,15 +3,20 @@ package grid
 import (
 	"sync"
 
+	"github.com/diakovliev/2rooms-oak/packages/common"
 	"github.com/diakovliev/2rooms-oak/packages/layout2d"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
+	"github.com/oakmound/oak/v4/event"
+	oakscene "github.com/oakmound/oak/v4/scene"
 )
 
 // Grid is a grid
 type Grid struct {
 	*sync.Mutex
+	cid       event.CallerID
 	rows      []Row
 	pos       floatgeom.Point2
+	speed     floatgeom.Point2
 	alignment layout2d.Alignment
 	w, h      float64
 	margin    float64
@@ -25,16 +30,24 @@ type Grid struct {
 //
 // Returns:
 //   - *Grid: a pointer to the created Grid instance.
-func New(pos floatgeom.Point2, margin float64) *Grid {
-	return &Grid{
+func New(
+	ctx *oakscene.Context,
+	pos floatgeom.Point2,
+	speed floatgeom.Point2,
+	margin float64,
+) (ret *Grid) {
+	ret = &Grid{
 		Mutex:     &sync.Mutex{},
 		pos:       pos,
+		speed:     speed,
 		margin:    margin,
 		alignment: layout2d.Left | layout2d.Top,
 		w:         margin,
 		h:         margin,
 		rows:      []Row{},
 	}
+	ret.cid = ctx.CallerMap.Register(ret)
+	return
 }
 
 // update updates the dimensions of the Grid.
@@ -67,11 +80,11 @@ func (g *Grid) update() {
 //
 // Return:
 // - *Grid: a pointer to the newly created Grid
-func (g *Grid) Init(rows, cols int, provider func(row, col int) layout2d.Entity) *Grid {
+func (g *Grid) Init(rows, cols int, provider func(row, col int) common.Entity) *Grid {
 	g.Mutex = &sync.Mutex{}
 	g.rows = make([]Row, rows)
 	for i := 0; i < rows; i++ {
-		g.rows[i] = Row{g, make([]layout2d.Entity, cols)}
+		g.rows[i] = Row{g, make([]common.Entity, cols)}
 		for j := 0; j < cols; j++ {
 			if provider == nil {
 				g.rows[i].entities[j] = nil
@@ -93,7 +106,7 @@ func (g *Grid) Init(rows, cols int, provider func(row, col int) layout2d.Entity)
 //
 // Return:
 // - *Grid: the modified Grid.
-func (g *Grid) Set(row, col int, entity layout2d.Entity) *Grid {
+func (g *Grid) Set(row, col int, entity common.Entity) *Grid {
 	g.Lock()
 	defer g.Unlock()
 	g.rows[row].entities[col] = entity
@@ -109,7 +122,7 @@ func (g *Grid) Set(row, col int, entity layout2d.Entity) *Grid {
 //
 // Returns:
 // - layout2d.Entity: The entity located at the specified row and column indices.
-func (g Grid) Get(row, col int) layout2d.Entity {
+func (g Grid) Get(row, col int) common.Entity {
 	g.Lock()
 	defer g.Unlock()
 	return g.rows[row].entities[col]
@@ -126,7 +139,7 @@ func (g *Grid) Row(index int) Row {
 	g.Lock()
 	defer g.Unlock()
 	if index >= len(g.rows) {
-		return Row{g, []layout2d.Entity{}}
+		return Row{g, []common.Entity{}}
 	}
 	return Row{g, g.rows[index].entities}
 }
@@ -138,7 +151,7 @@ func (g *Grid) Row(index int) Row {
 func (g *Grid) Column(index int) Column {
 	g.Lock()
 	defer g.Unlock()
-	column := make([]layout2d.Entity, 0, len(g.rows))
+	column := make([]common.Entity, 0, len(g.rows))
 	for _, row := range g.rows {
 		if index >= len(row.entities) {
 			column = append(column, nil)
@@ -147,6 +160,10 @@ func (g *Grid) Column(index int) Column {
 		}
 	}
 	return Column{g, column}
+}
+
+func (g Grid) CID() event.CallerID {
+	return event.Global
 }
 
 // Dims returns the dimensions of the Grid as a floatgeom.Point2.
@@ -203,10 +220,10 @@ func (g *Grid) SetPos(p floatgeom.Point2) {
 //
 // The alignment parameter specifies the layout alignment.
 // The return type is a slice of layout2d.Vectors.
-func (g Grid) vectors(alignment layout2d.Alignment) (ret []layout2d.Vectors) {
-	top := g.margin
+func (g Grid) vectors(alignment layout2d.Alignment) (ret []common.Vector) {
+	top := g.pos.Y() + g.margin
 	for _, row := range g.rows {
-		left := g.margin
+		left := g.pos.X() + g.margin
 		for _, entity := range row.entities {
 			if entity == nil {
 				left += g.margin
@@ -217,32 +234,34 @@ func (g Grid) vectors(alignment layout2d.Alignment) (ret []layout2d.Vectors) {
 			oldPos := floatgeom.Point2{entity.X(), entity.Y()}
 			newX := oldPos.X()
 			newY := oldPos.Y()
-			if g.alignment&layout2d.Left|layout2d.Right|layout2d.HCenter != 0 {
+			if alignment&layout2d.Left|layout2d.Right|layout2d.HCenter != 0 {
 				switch {
-				case g.alignment&layout2d.Left == layout2d.Left:
+				case alignment&layout2d.Left == layout2d.Left:
 					newX = left + g.margin
-				case g.alignment&layout2d.HCenter == layout2d.HCenter:
+				case alignment&layout2d.HCenter == layout2d.HCenter:
 					newX = left + g.w/2 - w/2
-				case g.alignment&layout2d.Right == layout2d.Right:
+				case alignment&layout2d.Right == layout2d.Right:
 					newX = left + g.w - w - g.margin
 				}
 			}
 			if g.alignment&layout2d.Top|layout2d.Bottom|layout2d.VCenter != 0 {
 				switch {
-				case g.alignment&layout2d.Top == layout2d.Top:
+				case alignment&layout2d.Top == layout2d.Top:
 					newY = top + g.margin
-				case g.alignment&layout2d.VCenter == layout2d.VCenter:
+				case alignment&layout2d.VCenter == layout2d.VCenter:
 					newY = top + (g.h-h)/2
-				case g.alignment&layout2d.Bottom == layout2d.Bottom:
+				case alignment&layout2d.Bottom == layout2d.Bottom:
 					newY = top + g.h - h - g.margin
 				}
 			}
 			newPos := floatgeom.Point2{newX, newY}
-			ret = append(ret, layout2d.Vectors{
+			ret = append(ret, common.Vector{
 				Entity: entity,
 				Delta:  newPos.Sub(oldPos),
 				Old:    oldPos,
 				New:    newPos,
+				// TODO: get entity speed
+				Speed: g.speed,
 			})
 			left += entity.W() + g.margin
 		}
@@ -255,9 +274,10 @@ func (g Grid) vectors(alignment layout2d.Alignment) (ret []layout2d.Vectors) {
 //
 // alignment: the alignment of the vectors.
 // []layout2d.Vectors: the vectors of the Grid.
-func (g *Grid) Vectors(alignment layout2d.Alignment) []layout2d.Vectors {
+func (g *Grid) Vectors(alignment layout2d.Alignment) []common.Vector {
 	g.Lock()
 	defer g.Unlock()
+	g.alignment = alignment
 	return g.vectors(alignment)
 }
 

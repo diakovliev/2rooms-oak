@@ -1,8 +1,10 @@
 package direction
 
 import (
+	"github.com/diakovliev/2rooms-oak/packages/common"
 	"github.com/diakovliev/2rooms-oak/packages/layout2d"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
+	oakscene "github.com/oakmound/oak/v4/scene"
 )
 
 // HLayout is a Layout with a horizontal layout.
@@ -14,12 +16,19 @@ type HLayout struct {
 //
 // It takes in the position of the layout (pos floatgeom.Point2) and the margin (margin float64).
 // It returns a HLayout.
-func Horizontal(pos floatgeom.Point2, margin float64) HLayout {
+func Horizontal(
+	ctx *oakscene.Context,
+	pos floatgeom.Point2,
+	speed floatgeom.Point2,
+	margin float64,
+) HLayout {
 	return HLayout{
 		Layout: newLayout(
+			ctx,
 			pos,
+			speed,
 			margin,
-			func(hl *Layout, alignment layout2d.Alignment) (ret []layout2d.Vectors) {
+			func(hl *Layout, alignment layout2d.Alignment) (ret []common.Vector) {
 				left := hl.pos.X() + hl.margin
 				for _, ee := range hl.entities {
 					w := ee.W()
@@ -27,24 +36,26 @@ func Horizontal(pos floatgeom.Point2, margin float64) HLayout {
 					oldPos := floatgeom.Point2{ee.X(), ee.Y()}
 					newPos := oldPos
 					switch {
-					case hl.alignment&layout2d.Top == layout2d.Top:
+					case alignment&layout2d.Top == layout2d.Top:
 						newPos = floatgeom.Point2{left, hl.pos.Y() + hl.margin}
-					case hl.alignment&layout2d.HCenter == layout2d.HCenter:
+					case alignment&layout2d.HCenter == layout2d.HCenter:
 						newPos = floatgeom.Point2{left, hl.pos.Y() + (hl.h-h)/2}
-					case hl.alignment&layout2d.Bottom == layout2d.Bottom:
+					case alignment&layout2d.Bottom == layout2d.Bottom:
 						newPos = floatgeom.Point2{left, hl.pos.Y() + hl.h - h - hl.margin}
 					}
-					ret = append(ret, layout2d.Vectors{
+					ret = append(ret, common.Vector{
 						Entity: ee,
 						Delta:  newPos.Sub(oldPos),
 						Old:    oldPos,
 						New:    newPos,
+						// TODO: get entity speed
+						Speed: hl.speed,
 					})
 					left += w + hl.margin
 				}
 				return
 			},
-			func(hl *Layout, e []layout2d.Entity) {
+			func(hl *Layout, e []common.Entity) {
 				for _, ee := range e {
 					w := ee.W()
 					h := ee.H()

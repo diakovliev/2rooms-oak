@@ -1,10 +1,10 @@
 package grid
 
-import "github.com/diakovliev/2rooms-oak/packages/layout2d"
+import "github.com/diakovliev/2rooms-oak/packages/common"
 
 type Column struct {
 	Grid     *Grid
-	entities []layout2d.Entity
+	entities []common.Entity
 }
 
 func (c Column) Len() int {

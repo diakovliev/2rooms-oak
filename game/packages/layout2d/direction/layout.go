@@ -3,20 +3,25 @@ package direction
 import (
 	"sync"
 
+	"github.com/diakovliev/2rooms-oak/packages/common"
 	"github.com/diakovliev/2rooms-oak/packages/layout2d"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
+	"github.com/oakmound/oak/v4/event"
+	oakscene "github.com/oakmound/oak/v4/scene"
 )
 
 // Layout is a layout
 type Layout struct {
 	*sync.Mutex
-	entities  []layout2d.Entity
+	cid       event.CallerID
+	entities  []common.Entity
 	pos       floatgeom.Point2
+	speed     floatgeom.Point2
 	alignment layout2d.Alignment
 	margin    float64
 	w, h      float64
-	vectors   func(layout *Layout, alignment layout2d.Alignment) (ret []layout2d.Vectors)
-	add       func(layout *Layout, e []layout2d.Entity)
+	vectors   func(layout *Layout, alignment layout2d.Alignment) (ret []common.Vector)
+	add       func(layout *Layout, e []common.Entity)
 }
 
 // newLayout creates a new Layout with the given parameters.
@@ -30,14 +35,17 @@ type Layout struct {
 // Returns:
 // - a pointer to the newly created Layout.
 func newLayout(
+	ctx *oakscene.Context,
 	pos floatgeom.Point2,
+	speed floatgeom.Point2,
 	margin float64,
-	vectors func(layout *Layout, alignment layout2d.Alignment) (ret []layout2d.Vectors),
-	add func(layout *Layout, e []layout2d.Entity),
-) *Layout {
-	return &Layout{
+	vectors func(layout *Layout, alignment layout2d.Alignment) (ret []common.Vector),
+	add func(layout *Layout, e []common.Entity),
+) (ret *Layout) {
+	ret = &Layout{
 		Mutex:     &sync.Mutex{},
 		pos:       pos,
+		speed:     speed,
 		margin:    margin,
 		alignment: layout2d.Left,
 		w:         margin,
@@ -45,13 +53,19 @@ func newLayout(
 		vectors:   vectors,
 		add:       add,
 	}
+	ret.cid = ctx.CallerMap.Register(ret)
+	return
+}
+
+func (l Layout) CID() event.CallerID {
+	return l.cid
 }
 
 // Add adds the given entities to the layout and returns a pointer to the modified layout.
 //
 // It takes a variadic parameter of type Entity.
 // It returns a pointer to the Layout.
-func (l Layout) Add(e ...layout2d.Entity) *Layout {
+func (l Layout) Add(e ...common.Entity) *Layout {
 	l.Mutex = &sync.Mutex{}
 	l.add(&l, e)
 	return &l
@@ -113,9 +127,10 @@ func (l *Layout) SetPos(p floatgeom.Point2) {
 // The alignment parameter specifies the desired alignment for the vectors.
 //
 // The return type of this function is []layout2d.Vectors.
-func (l *Layout) Vectors(alignment layout2d.Alignment) []layout2d.Vectors {
+func (l *Layout) Vectors(alignment layout2d.Alignment) []common.Vector {
 	l.Lock()
 	defer l.Unlock()
+	l.alignment = alignment
 	return l.vectors(l, alignment)
 }
 
