@@ -1,6 +1,8 @@
 package debug
 
 import (
+	"runtime"
+
 	"github.com/diakovliev/2rooms-oak/packages/scene"
 	"github.com/diakovliev/2rooms-oak/packages/window"
 	"github.com/oakmound/oak/v4/render"
@@ -15,6 +17,8 @@ type Scene struct {
 }
 
 func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	ret = &Scene{
 		logger: logger,
 		Name:   scene.Debug,

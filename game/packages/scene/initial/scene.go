@@ -2,6 +2,7 @@ package initial
 
 import (
 	"image/color"
+	"runtime"
 	"time"
 
 	"github.com/diakovliev/2rooms-oak/packages/common"
@@ -26,6 +27,8 @@ type Scene struct {
 }
 
 func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	ret = &Scene{
 		logger: logger,
 		Name:   scene.Initial,

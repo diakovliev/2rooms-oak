@@ -2,31 +2,19 @@ package main
 
 import (
 	"context"
+	"os"
 
-	"github.com/diakovliev/2rooms-oak/packages/app"
-	"github.com/diakovliev/2rooms-oak/packages/applogger"
-	"github.com/diakovliev/2rooms-oak/packages/appmanager"
 	"github.com/diakovliev/2rooms-oak/packages/scene/debug"
 	"github.com/diakovliev/2rooms-oak/packages/scene/initial"
 	"github.com/diakovliev/2rooms-oak/packages/window"
-	"go.uber.org/fx"
+	"github.com/rs/zerolog"
 )
 
 func main() {
-	fx.New(
-		fx.WithLogger(applogger.NewAppFxLogger),
-		fx.Provide(
-			appmanager.New,
-			context.Background,
-			func() applogger.Flags {
-				return applogger.Flags{
-					UseFxConsoleLogger: false,
-				}
-			}),
-		applogger.Module,
-		debug.Module,
-		initial.Module,
-		window.Module,
-		app.Module,
-	).Run()
+	logger := zerolog.New(os.Stdout)
+	ctx := context.Background()
+	win := window.New()
+	debug.New(logger, win)
+	initial.New(logger, win)
+	win.Run(ctx)
 }
