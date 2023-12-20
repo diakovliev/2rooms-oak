@@ -97,9 +97,9 @@ func (l Layout) H() float64 {
 	return l.h
 }
 
-// SetPos sets the position of the VLayout to the specified point.
+// SetPos sets the position of the Layout to the specified point.
 //
-// p: The new position for the VLayout.
+// p: The new position for the Layout.
 func (l *Layout) SetPos(p floatgeom.Point2) {
 	l.Lock()
 	l.pos = p
@@ -112,7 +112,7 @@ func (l *Layout) SetPos(p floatgeom.Point2) {
 //
 // The alignment parameter specifies the desired alignment for the vectors.
 //
-// The return type of this function is []Delta.
+// The return type of this function is []layout2d.Vectors.
 func (l *Layout) Vectors(alignment layout2d.Alignment) []layout2d.Vectors {
 	l.Lock()
 	defer l.Unlock()

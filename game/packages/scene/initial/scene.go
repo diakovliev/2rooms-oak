@@ -138,7 +138,7 @@ func (s Scene) testVerticalEntities(ctx *oakscene.Context) layout2d.Entity {
 	return testVerticalLayout
 }
 
-func (s Scene) testGrid(ctx *oakscene.Context) {
+func (s Scene) testGrid(ctx *oakscene.Context) layout2d.Entity {
 
 	entLayer := 10
 
@@ -161,6 +161,8 @@ func (s Scene) testGrid(ctx *oakscene.Context) {
 	})
 
 	grid.Apply(layout2d.HCenter | layout2d.VCenter)
+
+	return grid
 }
 
 func (s Scene) start(ctx *oakscene.Context) {

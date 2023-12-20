@@ -149,6 +149,60 @@ func (g *Grid) Column(index int) Column {
 	return Column{g, column}
 }
 
+// Dims returns the dimensions of the Grid as a floatgeom.Point2.
+//
+// There are no parameters.
+// It returns a floatgeom.Point2.
+func (g Grid) Dims() floatgeom.Point2 {
+	return floatgeom.Point2{g.w, g.h}
+}
+
+// X returns the X-coordinate of the Grid object.
+//
+// No parameters.
+// Returns a float64 value.
+func (g Grid) X() float64 {
+	return g.pos.X()
+}
+
+// Y returns the Y coordinate of the grid.
+//
+// No parameters.
+// Returns a float64.
+func (g Grid) Y() float64 {
+	return g.pos.Y()
+}
+
+// W returns the value of the W field in the Grid struct.
+//
+// No parameters.
+// Returns a float64.
+func (g Grid) W() float64 {
+	return g.w
+}
+
+// H returns the value of the 'h' field in the Grid struct.
+//
+// No parameters.
+// Returns a float64.
+func (g Grid) H() float64 {
+	return g.h
+}
+
+// SetPos sets the position of the Grid to the specified point.
+//
+// p: The new position for the Grid.
+func (g *Grid) SetPos(p floatgeom.Point2) {
+	g.Lock()
+	g.pos = p
+	g.Unlock()
+	g.Apply(g.alignment)
+}
+
+// vectors calculates the vectors of the Grid based on the given alignment.
+//
+// The alignment parameter specifies the layout alignment.
+// The return type is a slice of layout2d.Vectors.
 func (g Grid) vectors(alignment layout2d.Alignment) (ret []layout2d.Vectors) {
 	top := g.margin
 	for _, row := range g.rows {
@@ -197,6 +251,19 @@ func (g Grid) vectors(alignment layout2d.Alignment) (ret []layout2d.Vectors) {
 	return
 }
 
+// Vectors returns the vectors of the Grid based on the given alignment.
+//
+// alignment: the alignment of the vectors.
+// []layout2d.Vectors: the vectors of the Grid.
+func (g *Grid) Vectors(alignment layout2d.Alignment) []layout2d.Vectors {
+	g.Lock()
+	defer g.Unlock()
+	return g.vectors(alignment)
+}
+
+// Apply applies the given alignment to the Grid.
+//
+// alignment: the alignment to be applied to the Grid.
 func (g *Grid) Apply(alignment layout2d.Alignment) {
 	g.Lock()
 	defer g.Unlock()
