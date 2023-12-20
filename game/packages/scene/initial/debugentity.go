@@ -6,6 +6,7 @@ import (
 
 	"github.com/diakovliev/2rooms-oak/packages/utils"
 	"github.com/oakmound/oak/v4"
+	"github.com/oakmound/oak/v4/alg/floatgeom"
 	"github.com/oakmound/oak/v4/alg/intgeom"
 	"github.com/oakmound/oak/v4/entities"
 	"github.com/oakmound/oak/v4/event"
@@ -81,27 +82,27 @@ func debugEntity(ctx *oakscene.Context) {
 	debugLayer := 1000
 	debugMargin := 3.
 
-	debugLayout := utils.NewVTextLayout(nil, debugMargin).Add(
+	layout := utils.NewVTextLayout(nil, debugMargin).Add(
 		//utils.S("Debug:"),
 		newFPS(ctx),
 		newMouseCoords(ctx),
 		newViewportPosition(ctx),
 	)
 
-	entities.New(ctx,
-		entities.WithRenderable(debugLayout.Renderable()),
-		entities.WithDimensions(debugLayout.GetFDims()),
+	panel := entities.New(ctx,
+		entities.WithRenderable(layout.Renderable()),
+		entities.WithDimensions(layout.GetFDims()),
 		entities.WithDrawLayers([]int{debugLayer}),
 	)
 
 	event.GlobalBind(ctx, oak.ViewportUpdate, func(ev intgeom.Point2) event.Response {
-		// // Move the panel on viewport update
-		// debugPanel.SetPos(
-		// 	floatgeom.Point2{
-		// 		float64(ev.X()),
-		// 		float64(ev.Y()),
-		// 	},
-		// )
+		// Move the panel on viewport update
+		panel.SetPos(
+			floatgeom.Point2{
+				float64(ev.X()),
+				float64(ev.Y()),
+			},
+		)
 		return event.ResponseNone
 	})
 }
