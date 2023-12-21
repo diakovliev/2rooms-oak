@@ -12,6 +12,7 @@ import (
 	"github.com/diakovliev/2rooms-oak/packages/move2d"
 	"github.com/diakovliev/2rooms-oak/packages/scene"
 	"github.com/diakovliev/2rooms-oak/packages/stimer"
+	"github.com/diakovliev/2rooms-oak/packages/ui/button"
 	"github.com/diakovliev/2rooms-oak/packages/window"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
 	"github.com/oakmound/oak/v4/entities"
@@ -39,6 +40,23 @@ func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
 		logger.Panic().Err(err).Msgf("failed to add '%s' scene", ret.Name)
 	}
 	return
+}
+
+func (s Scene) testMenu(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
+
+	speed := floatgeom.Point2{5, 5}
+	pos := floatgeom.Point2{100, 200}
+
+	layout := direction.Vertical(ctx, pos, speed, 3.).Add(
+		button.New(ctx, "button0", button.Dimensions(100, 20)),
+		button.New(ctx, "button1", button.Dimensions(100, 20)),
+		button.New(ctx, "button2", button.Dimensions(100, 20)),
+		button.New(ctx, "button3", button.Dimensions(100, 20)),
+	)
+
+	layout.Apply(layout2d.VCenter)
+
+	return layout
 }
 
 func (s Scene) testHorizontalEntities(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
@@ -240,10 +258,11 @@ func (s Scene) start(ctx *oakscene.Context) {
 	})
 
 	mover := move2d.New(ctx)
+	s.testMenu(ctx, mover)
 
 	//s.testHorizontalEntities(ctx, mover)
-	s.testVerticalEntities(ctx, mover)
-	s.testGrid(ctx, mover)
+	//s.testVerticalEntities(ctx, mover)
+	//s.testGrid(ctx, mover)
 }
 
 func (s Scene) end() (string, *oakscene.Result) {
