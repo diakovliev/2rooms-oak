@@ -11,6 +11,7 @@ import (
 	"github.com/diakovliev/2rooms-oak/packages/layout2d/grid"
 	"github.com/diakovliev/2rooms-oak/packages/move2d"
 	"github.com/diakovliev/2rooms-oak/packages/scene"
+	"github.com/diakovliev/2rooms-oak/packages/stimer"
 	"github.com/diakovliev/2rooms-oak/packages/window"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
 	"github.com/oakmound/oak/v4/entities"
@@ -73,26 +74,25 @@ func (s Scene) testHorizontalEntities(ctx *oakscene.Context) common.Entity {
 		),
 	)
 
-	mover := move2d.New(ctx)
-
-	timer := time.NewTicker(time.Second)
 	alignments := []layout2d.Alignment{
 		layout2d.HCenter,
 		layout2d.Top,
 		layout2d.Bottom,
 	}
+
+	mover := move2d.New(ctx)
 	index := 0
-	//testHorizontalLayout.Apply(alignments[index])
-	go func() {
-		for {
-			<-timer.C
+	stimer.New(
+		ctx,
+		time.Second,
+		func() {
 			vectors := testHorizontalLayout.Vectors(alignments[index%len(alignments)])
 			for _, vector := range vectors {
 				mover.Start(vector, vector.Speed)
 			}
 			index++
-		}
-	}()
+		},
+	)
 
 	return testHorizontalLayout
 }
@@ -131,62 +131,65 @@ func (s Scene) testVerticalEntities(ctx *oakscene.Context) common.Entity {
 		),
 	)
 
-	mover := move2d.New(ctx)
-
-	timer := time.NewTicker(time.Second)
 	alignments := []layout2d.Alignment{
 		layout2d.VCenter,
 		layout2d.Left,
 		layout2d.Right,
 	}
+
+	mover := move2d.New(ctx)
 	index := 0
-	//testVerticalLayout.Apply(alignments[index])
-	go func() {
-		for {
-			<-timer.C
-			//testVerticalLayout.Apply(alignments[index%len(alignments)])
+	stimer.New(
+		ctx,
+		time.Second,
+		func() {
 			vectors := testVerticalLayout.Vectors(alignments[index%len(alignments)])
 			for _, vector := range vectors {
 				mover.Start(vector, vector.Speed)
 			}
 			index++
-		}
-	}()
+		},
+	)
 
 	return testVerticalLayout
 }
 
 func (s Scene) testGrid(ctx *oakscene.Context) common.Entity {
 
+	bounds := ctx.Window.Bounds()
+
 	entLayer := 10
 
-	pos := floatgeom.Point2{100, 100}
-	initialPos := floatgeom.Point2{200, 200}
+	pos := floatgeom.Point2{float64(bounds.X() / 4), float64(bounds.Y() / 4)}
+	initialPos := floatgeom.Point2{float64(bounds.X() / 2), float64(bounds.Y() / 2)}
 	speed := floatgeom.Point2{5, 5}
-	color := color.RGBA{0, 255, 0, 255}
 	layers := []int{entLayer}
 
 	commonOpts := entities.And(
 		entities.WithSpeed(speed),
-		entities.WithColor(color),
 		entities.WithDrawLayers(layers),
 	)
 
+	index := 0
 	grid := grid.New(ctx, pos, speed, 2).Init(20, 20, func(row, col int) common.Entity {
+		dims := floatgeom.Point2{10, 10}
+		clr := color.RGBA{0, 255, 0, 255}
+		if index%3 == 1 {
+			dims = floatgeom.Point2{6, 6}
+			clr = color.RGBA{255, 255, 255, 255}
+		}
+		index++
 		return entities.New(ctx,
-			entities.WithDimensions(floatgeom.Point2{10, 10}),
+			entities.WithDimensions(dims),
 			entities.WithPosition(initialPos),
+			entities.WithColor(clr),
 			commonOpts,
 		)
 	})
 
-	//grid.Apply(layout2d.HCenter | layout2d.VCenter)
-
-	mover := move2d.New(ctx)
-
-	timer := time.NewTicker(time.Second)
-
 	vectors := grid.Vectors(layout2d.HCenter | layout2d.VCenter)
+	//vectors := grid.Vectors(layout2d.Left | layout2d.Top)
+	//vectors := grid.Vectors(layout2d.Right | layout2d.Bottom)
 	reverse := make([]common.Vector, 0)
 	for _, vector := range vectors {
 		reverse = append(reverse, vector.Reverse())
@@ -197,17 +200,19 @@ func (s Scene) testGrid(ctx *oakscene.Context) common.Entity {
 		reverse,
 	}
 
-	index := 0
-	go func() {
-		for {
-			<-timer.C
-			vectors := actions[index%len(actions)]
+	mover := move2d.New(ctx)
+	index = 0
+	stimer.New(
+		ctx,
+		time.Second,
+		func() {
+			vectors = actions[index%len(actions)]
 			for _, vector := range vectors {
 				mover.Start(vector, vector.Speed)
 			}
 			index++
-		}
-	}()
+		},
+	)
 
 	return grid
 }
@@ -238,7 +243,7 @@ func (s Scene) start(ctx *oakscene.Context) {
 	})
 
 	//s.testHorizontalEntities(ctx)
-	//s.testVerticalEntities(ctx)
+	s.testVerticalEntities(ctx)
 	s.testGrid(ctx)
 }
 

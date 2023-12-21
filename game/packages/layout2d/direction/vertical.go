@@ -28,42 +28,44 @@ func Vertical(
 			pos,
 			speed,
 			margin,
-			func(vl *Layout, alignment layout2d.Alignment) (ret []common.Vector) {
-				top := vl.pos.Y() + vl.margin
-				for _, ee := range vl.entities {
-					w := ee.W()
-					h := ee.H()
-					oldPos := floatgeom.Point2{ee.X(), ee.Y()}
+			// vectors
+			func(layout *Layout, alignment layout2d.Alignment) (ret []common.Vector) {
+				top := layout.pos.Y() + layout.margin
+				for _, entity := range layout.entities {
+					w := entity.W()
+					h := entity.H()
+					oldPos := floatgeom.Point2{entity.X(), entity.Y()}
 					newPos := oldPos
 					switch {
 					case alignment&layout2d.Left == layout2d.Left:
-						newPos = floatgeom.Point2{vl.pos.X() + vl.margin, top}
+						newPos = floatgeom.Point2{layout.pos.X() + layout.margin, top}
 					case alignment&layout2d.VCenter == layout2d.VCenter:
-						newPos = floatgeom.Point2{vl.pos.X() + vl.w/2 - w/2, top}
+						newPos = floatgeom.Point2{layout.pos.X() + layout.w/2 - w/2, top}
 					case alignment&layout2d.Right == layout2d.Right:
-						newPos = floatgeom.Point2{vl.pos.X() + vl.w - w - vl.margin, top}
+						newPos = floatgeom.Point2{layout.pos.X() + layout.w - w - layout.margin, top}
 					}
 					ret = append(ret, common.Vector{
-						Entity: ee,
+						Entity: entity,
 						Delta:  newPos.Sub(oldPos),
 						Old:    oldPos,
 						New:    newPos,
 						// TODO: get entity speed
-						Speed: vl.speed,
+						Speed: layout.speed,
 					})
-					top += h + vl.margin
+					top += h + layout.margin
 				}
 				return
 			},
-			func(vl *Layout, e []common.Entity) {
-				for _, ee := range e {
-					w := ee.W()
-					h := ee.H()
-					if float64(w)+2*vl.margin > vl.w {
-						vl.w = float64(w) + 2*vl.margin
+			// add
+			func(layout *Layout, entities []common.Entity) {
+				for _, entity := range entities {
+					w := entity.W()
+					h := entity.H()
+					if float64(w)+2*layout.margin > layout.w {
+						layout.w = float64(w) + 2*layout.margin
 					}
-					vl.h += float64(h) + vl.margin
-					vl.entities = append(vl.entities, ee)
+					layout.h += float64(h) + layout.margin
+					layout.entities = append(layout.entities, entity)
 				}
 			},
 		),

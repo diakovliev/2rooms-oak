@@ -58,6 +58,8 @@ func newLayout(
 }
 
 func (l Layout) CID() event.CallerID {
+	l.Lock()
+	defer l.Unlock()
 	return l.cid
 }
 
@@ -67,6 +69,8 @@ func (l Layout) CID() event.CallerID {
 // It returns a pointer to the Layout.
 func (l Layout) Add(e ...common.Entity) *Layout {
 	l.Mutex = &sync.Mutex{}
+	l.Lock()
+	defer l.Unlock()
 	l.add(&l, e)
 	return &l
 }
@@ -76,6 +80,8 @@ func (l Layout) Add(e ...common.Entity) *Layout {
 // There are no parameters.
 // It returns a floatgeom.Point2.
 func (l Layout) Dims() floatgeom.Point2 {
+	l.Lock()
+	defer l.Unlock()
 	return floatgeom.Point2{l.w, l.h}
 }
 
@@ -84,6 +90,8 @@ func (l Layout) Dims() floatgeom.Point2 {
 // No parameters.
 // Returns a float64 value.
 func (l Layout) X() float64 {
+	l.Lock()
+	defer l.Unlock()
 	return l.pos.X()
 }
 
@@ -92,6 +100,8 @@ func (l Layout) X() float64 {
 // No parameters.
 // Returns a float64.
 func (l Layout) Y() float64 {
+	l.Lock()
+	defer l.Unlock()
 	return l.pos.Y()
 }
 
@@ -100,6 +110,8 @@ func (l Layout) Y() float64 {
 // No parameters.
 // Returns a float64.
 func (l Layout) W() float64 {
+	l.Lock()
+	defer l.Unlock()
 	return l.w
 }
 
@@ -108,6 +120,8 @@ func (l Layout) W() float64 {
 // No parameters.
 // Returns a float64.
 func (l Layout) H() float64 {
+	l.Lock()
+	defer l.Unlock()
 	return l.h
 }
 
@@ -116,9 +130,9 @@ func (l Layout) H() float64 {
 // p: The new position for the Layout.
 func (l *Layout) SetPos(p floatgeom.Point2) {
 	l.Lock()
+	defer l.Unlock()
 	l.pos = p
-	l.Unlock()
-	l.Apply(l.alignment)
+	l.apply(l.alignment)
 }
 
 // Vectors returns a slice of Delta objects representing the vectors in the Layout,
@@ -134,14 +148,18 @@ func (l *Layout) Vectors(alignment layout2d.Alignment) []common.Vector {
 	return l.vectors(l, alignment)
 }
 
+func (l *Layout) apply(alignment layout2d.Alignment) {
+	l.alignment = alignment
+	for _, vector := range l.vectors(l, alignment) {
+		vector.Entity.SetPos(vector.New)
+	}
+}
+
 // Apply rearranges the entities in a Layout according to the specified alignment.
 //
 // alignment is the alignment to use.
 func (l *Layout) Apply(alignment layout2d.Alignment) {
 	l.Lock()
 	defer l.Unlock()
-	l.alignment = alignment
-	for _, vector := range l.vectors(l, alignment) {
-		vector.Entity.SetPos(vector.New)
-	}
+	l.apply(alignment)
 }

@@ -28,42 +28,44 @@ func Horizontal(
 			pos,
 			speed,
 			margin,
-			func(hl *Layout, alignment layout2d.Alignment) (ret []common.Vector) {
-				left := hl.pos.X() + hl.margin
-				for _, ee := range hl.entities {
-					w := ee.W()
-					h := ee.H()
-					oldPos := floatgeom.Point2{ee.X(), ee.Y()}
+			// vectors
+			func(layout *Layout, alignment layout2d.Alignment) (ret []common.Vector) {
+				left := layout.pos.X() + layout.margin
+				for _, entity := range layout.entities {
+					w := entity.W()
+					h := entity.H()
+					oldPos := floatgeom.Point2{entity.X(), entity.Y()}
 					newPos := oldPos
 					switch {
 					case alignment&layout2d.Top == layout2d.Top:
-						newPos = floatgeom.Point2{left, hl.pos.Y() + hl.margin}
+						newPos = floatgeom.Point2{left, layout.pos.Y() + layout.margin}
 					case alignment&layout2d.HCenter == layout2d.HCenter:
-						newPos = floatgeom.Point2{left, hl.pos.Y() + (hl.h-h)/2}
+						newPos = floatgeom.Point2{left, layout.pos.Y() + (layout.h-h)/2}
 					case alignment&layout2d.Bottom == layout2d.Bottom:
-						newPos = floatgeom.Point2{left, hl.pos.Y() + hl.h - h - hl.margin}
+						newPos = floatgeom.Point2{left, layout.pos.Y() + layout.h - h - layout.margin}
 					}
 					ret = append(ret, common.Vector{
-						Entity: ee,
+						Entity: entity,
 						Delta:  newPos.Sub(oldPos),
 						Old:    oldPos,
 						New:    newPos,
 						// TODO: get entity speed
-						Speed: hl.speed,
+						Speed: layout.speed,
 					})
-					left += w + hl.margin
+					left += w + layout.margin
 				}
 				return
 			},
-			func(hl *Layout, e []common.Entity) {
-				for _, ee := range e {
+			// add
+			func(layout *Layout, entity []common.Entity) {
+				for _, ee := range entity {
 					w := ee.W()
 					h := ee.H()
-					if float64(h)+2*hl.margin > hl.h {
-						hl.h = float64(h) + 2*hl.margin
+					if float64(h)+2*layout.margin > layout.h {
+						layout.h = float64(h) + 2*layout.margin
 					}
-					hl.w += float64(w) + hl.margin
-					hl.entities = append(hl.entities, ee)
+					layout.w += float64(w) + layout.margin
+					layout.entities = append(layout.entities, ee)
 				}
 			},
 		),

@@ -22,3 +22,17 @@ func (c Column) H() float64 {
 	}
 	return height
 }
+
+func (c Column) W() float64 {
+	width := c.Grid.margin
+	for _, ee := range c.entities {
+		if ee == nil {
+			width += c.Grid.margin
+			continue
+		}
+		if width < ee.W() {
+			width = ee.W() + c.Grid.margin
+		}
+	}
+	return width
+}

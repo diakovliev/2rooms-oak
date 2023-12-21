@@ -136,8 +136,8 @@ func (g Grid) Get(row, col int) common.Entity {
 // Returns:
 //   - Row: A Row object containing the entities at the specified index.
 func (g *Grid) Row(index int) Row {
-	g.Lock()
-	defer g.Unlock()
+	// g.Lock()
+	// defer g.Unlock()
 	if index >= len(g.rows) {
 		return Row{g, []common.Entity{}}
 	}
@@ -149,8 +149,8 @@ func (g *Grid) Row(index int) Row {
 // The index parameter specifies the index of the column to retrieve.
 // The function returns a Column object representing the column at the given index.
 func (g *Grid) Column(index int) Column {
-	g.Lock()
-	defer g.Unlock()
+	// g.Lock()
+	// defer g.Unlock()
 	column := make([]common.Entity, 0, len(g.rows))
 	for _, row := range g.rows {
 		if index >= len(row.entities) {
@@ -221,10 +221,19 @@ func (g *Grid) SetPos(p floatgeom.Point2) {
 // The alignment parameter specifies the layout alignment.
 // The return type is a slice of layout2d.Vectors.
 func (g Grid) vectors(alignment layout2d.Alignment) (ret []common.Vector) {
+	if len(g.rows) == 0 {
+		return
+	}
+	columnWiths := make([]float64, len(g.rows))
+	for i := 0; i < len(g.rows[0].entities); i++ {
+		columnWiths[i] = g.Column(i).W()
+	}
 	top := g.pos.Y() + g.margin
 	for _, row := range g.rows {
+		rh := row.H()
 		left := g.pos.X() + g.margin
-		for _, entity := range row.entities {
+		for j, entity := range row.entities {
+			cw := columnWiths[j]
 			if entity == nil {
 				left += g.margin
 				continue
@@ -237,21 +246,21 @@ func (g Grid) vectors(alignment layout2d.Alignment) (ret []common.Vector) {
 			if alignment&layout2d.Left|layout2d.Right|layout2d.HCenter != 0 {
 				switch {
 				case alignment&layout2d.Left == layout2d.Left:
-					newX = left + g.margin
+					newX = left
 				case alignment&layout2d.HCenter == layout2d.HCenter:
-					newX = left + g.w/2 - w/2
+					newX = left + cw/2 - w/2
 				case alignment&layout2d.Right == layout2d.Right:
-					newX = left + g.w - w - g.margin
+					newX = left + cw - w
 				}
 			}
 			if g.alignment&layout2d.Top|layout2d.Bottom|layout2d.VCenter != 0 {
 				switch {
 				case alignment&layout2d.Top == layout2d.Top:
-					newY = top + g.margin
+					newY = top
 				case alignment&layout2d.VCenter == layout2d.VCenter:
-					newY = top + (g.h-h)/2
+					newY = top + rh/2 - h/2
 				case alignment&layout2d.Bottom == layout2d.Bottom:
-					newY = top + g.h - h - g.margin
+					newY = top + rh - h
 				}
 			}
 			newPos := floatgeom.Point2{newX, newY}
@@ -263,9 +272,9 @@ func (g Grid) vectors(alignment layout2d.Alignment) (ret []common.Vector) {
 				// TODO: get entity speed
 				Speed: g.speed,
 			})
-			left += entity.W() + g.margin
+			left += cw + g.margin
 		}
-		top += row.H() + g.margin
+		top += rh + g.margin
 	}
 	return
 }
