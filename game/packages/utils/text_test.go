@@ -89,7 +89,7 @@ func TestSplitToLines(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := utils.SplitToLines(tc.input, tc.maxLen)
+			got, err := utils.SplitToLines(tc.input, utils.StringLenMesure{MaxLen: tc.maxLen})
 			if tc.err != nil {
 				assert.Error(t, err)
 				assert.True(t, errors.Is(err, tc.err))
