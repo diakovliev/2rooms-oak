@@ -41,7 +41,7 @@ func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
 	return
 }
 
-func (s Scene) testHorizontalEntities(ctx *oakscene.Context) common.Entity {
+func (s Scene) testHorizontalEntities(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
 	entLayer := 10
 
 	speed := floatgeom.Point2{5, 5}
@@ -80,7 +80,6 @@ func (s Scene) testHorizontalEntities(ctx *oakscene.Context) common.Entity {
 		layout2d.Bottom,
 	}
 
-	mover := move2d.New(ctx)
 	index := 0
 	stimer.New(
 		ctx,
@@ -97,7 +96,7 @@ func (s Scene) testHorizontalEntities(ctx *oakscene.Context) common.Entity {
 	return testHorizontalLayout
 }
 
-func (s Scene) testVerticalEntities(ctx *oakscene.Context) common.Entity {
+func (s Scene) testVerticalEntities(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
 	entLayer := 10
 
 	speed := floatgeom.Point2{5, 5}
@@ -112,7 +111,7 @@ func (s Scene) testVerticalEntities(ctx *oakscene.Context) common.Entity {
 	)
 
 	testVerticalLayout := direction.Vertical(ctx, pos, speed, 3.).Add(
-		s.testHorizontalEntities(ctx),
+		s.testHorizontalEntities(ctx, mover),
 		entities.New(ctx,
 			entities.WithDimensions(floatgeom.Point2{100, 10}),
 			commonOpts,
@@ -137,7 +136,6 @@ func (s Scene) testVerticalEntities(ctx *oakscene.Context) common.Entity {
 		layout2d.Right,
 	}
 
-	mover := move2d.New(ctx)
 	index := 0
 	stimer.New(
 		ctx,
@@ -154,7 +152,7 @@ func (s Scene) testVerticalEntities(ctx *oakscene.Context) common.Entity {
 	return testVerticalLayout
 }
 
-func (s Scene) testGrid(ctx *oakscene.Context) common.Entity {
+func (s Scene) testGrid(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
 
 	bounds := ctx.Window.Bounds()
 
@@ -200,7 +198,6 @@ func (s Scene) testGrid(ctx *oakscene.Context) common.Entity {
 		reverse,
 	}
 
-	mover := move2d.New(ctx)
 	index = 0
 	stimer.New(
 		ctx,
@@ -242,9 +239,11 @@ func (s Scene) start(ctx *oakscene.Context) {
 		return event.ResponseNone
 	})
 
-	//s.testHorizontalEntities(ctx)
-	s.testVerticalEntities(ctx)
-	s.testGrid(ctx)
+	mover := move2d.New(ctx)
+
+	//s.testHorizontalEntities(ctx, mover)
+	s.testVerticalEntities(ctx, mover)
+	s.testGrid(ctx, mover)
 }
 
 func (s Scene) end() (string, *oakscene.Result) {

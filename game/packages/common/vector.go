@@ -11,10 +11,15 @@ type Vector struct {
 	Speed  floatgeom.Point2
 }
 
+// Reverse reverses the vector.
+//
+// It takes no parameters.
+// It returns a Vector.
 func (v Vector) Reverse() Vector {
 	oldOld := v.Old
 	oldNew := v.New
 	v.New = oldOld
 	v.Old = oldNew
+	v.Delta = v.New.Sub(v.Old)
 	return v
 }

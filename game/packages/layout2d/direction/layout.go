@@ -128,10 +128,10 @@ func (l Layout) H() float64 {
 // SetPos sets the position of the Layout to the specified point.
 //
 // p: The new position for the Layout.
-func (l *Layout) SetPos(p floatgeom.Point2) {
+func (l *Layout) SetPos(pos floatgeom.Point2) {
 	l.Lock()
 	defer l.Unlock()
-	l.pos = p
+	l.pos = pos
 	l.apply(l.alignment)
 }
 

@@ -212,8 +212,7 @@ func (g Grid) H() float64 {
 func (g *Grid) SetPos(p floatgeom.Point2) {
 	g.Lock()
 	g.pos = p
-	g.Unlock()
-	g.Apply(g.alignment)
+	g.apply(g.alignment)
 }
 
 // vectors calculates the vectors of the Grid based on the given alignment.
@@ -290,14 +289,18 @@ func (g *Grid) Vectors(alignment layout2d.Alignment) []common.Vector {
 	return g.vectors(alignment)
 }
 
+func (g *Grid) apply(alignment layout2d.Alignment) {
+	g.alignment = alignment
+	for _, vector := range g.vectors(alignment) {
+		vector.Entity.SetPos(vector.New)
+	}
+}
+
 // Apply applies the given alignment to the Grid.
 //
 // alignment: the alignment to be applied to the Grid.
 func (g *Grid) Apply(alignment layout2d.Alignment) {
 	g.Lock()
 	defer g.Unlock()
-	g.alignment = alignment
-	for _, vector := range g.vectors(alignment) {
-		vector.Entity.SetPos(vector.New)
-	}
+	g.apply(alignment)
 }

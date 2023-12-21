@@ -26,17 +26,13 @@ func New(ctx *oakscene.Context) (ret *Manager) {
 func (m *Manager) Start(vector common.Vector, speed floatgeom.Point2) (move Move) {
 	m.Lock()
 	defer m.Unlock()
+	newMove := newLinear(m, vector, speed)
 	move, ok := m.moves[vector.Entity.CID()]
-	if !ok {
-		// Create new move
-		move = newLinear(m, vector, speed)
-	} else {
+	if ok {
 		// Replace move
-		pos := move.Pos()
-		move = newLinear(m, vector, speed)
-		move.SetPos(pos)
+		newMove.SetPos(move.Pos())
 	}
-	m.moves[move.CID()] = move
+	m.moves[newMove.CID()] = newMove
 	return
 }
 

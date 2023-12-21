@@ -61,6 +61,7 @@ func (lm *LinearMove) SetPos(pos floatgeom.Point2) {
 	lm.Lock()
 	defer lm.Unlock()
 	lm.pos = pos
+	lm.vector.Entity.SetPos(lm.pos)
 }
 
 // Returns the speed of the move
