@@ -5,9 +5,9 @@ import (
 
 	"github.com/diakovliev/2rooms-oak/packages/common"
 	"github.com/diakovliev/2rooms-oak/packages/layout2d"
-	"github.com/oakmound/oak/v4/alg/floatgeom"
-	"github.com/oakmound/oak/v4/event"
-	oakscene "github.com/oakmound/oak/v4/scene"
+	"github.com/diakovliev/oak/v4/alg/floatgeom"
+	"github.com/diakovliev/oak/v4/event"
+	oakscene "github.com/diakovliev/oak/v4/scene"
 )
 
 // Layout is a layout

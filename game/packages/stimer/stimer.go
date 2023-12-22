@@ -4,9 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/oakmound/oak/v4/event"
+	"github.com/diakovliev/oak/v4/event"
 
-	oakscene "github.com/oakmound/oak/v4/scene"
+	oakscene "github.com/diakovliev/oak/v4/scene"
 )
 
 type STimer struct {

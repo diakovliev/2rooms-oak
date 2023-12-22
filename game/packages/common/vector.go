@@ -1,6 +1,6 @@
 package common
 
-import "github.com/oakmound/oak/v4/alg/floatgeom"
+import "github.com/diakovliev/oak/v4/alg/floatgeom"
 
 // Vector is a struct that contains the entity, the delta, the old and new positions.
 type Vector struct {

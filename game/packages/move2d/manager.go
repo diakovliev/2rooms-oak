@@ -4,10 +4,10 @@ import (
 	"sync"
 
 	"github.com/diakovliev/2rooms-oak/packages/common"
-	"github.com/oakmound/oak/v4/alg/floatgeom"
-	"github.com/oakmound/oak/v4/event"
+	"github.com/diakovliev/oak/v4/alg/floatgeom"
+	"github.com/diakovliev/oak/v4/event"
 
-	oakscene "github.com/oakmound/oak/v4/scene"
+	oakscene "github.com/diakovliev/oak/v4/scene"
 )
 
 type Manager struct {

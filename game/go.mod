@@ -3,12 +3,13 @@ module github.com/diakovliev/2rooms-oak
 go 1.21.5
 
 require (
-	github.com/oakmound/oak/v4 v4.0.0-00010101000000-000000000000
+	github.com/diakovliev/oak/v4 v4.0.0-00010101000000-000000000000
 	github.com/rs/zerolog v1.31.0
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/image v0.14.0
 )
 
-replace github.com/oakmound/oak/v4 => ../oak
+replace github.com/diakovliev/oak/v4 => ../oak
 
 require (
 	dmitri.shuralyov.com/gpu/mtl v0.0.0-20221208032759-85de2813cf6b // indirect
@@ -28,7 +29,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848 // indirect
 	golang.org/x/exp/shiny v0.0.0-20231219180239-dc181d75b848 // indirect
-	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect

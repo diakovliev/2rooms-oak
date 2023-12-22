@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"github.com/oakmound/oak/v4/alg/floatgeom"
-	oakscene "github.com/oakmound/oak/v4/scene"
+	"github.com/diakovliev/oak/v4/alg/floatgeom"
+	oakscene "github.com/diakovliev/oak/v4/scene"
 )
 
 func ViewportRect(ctx *oakscene.Context) (ret floatgeom.Rect2) {

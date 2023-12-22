@@ -1,7 +1,7 @@
 package button
 
 import (
-	"github.com/oakmound/oak/v4/alg/intgeom"
+	"github.com/diakovliev/oak/v4/alg/intgeom"
 )
 
 type Option func(b *Button)

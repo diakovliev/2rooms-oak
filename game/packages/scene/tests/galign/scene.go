@@ -15,10 +15,10 @@ import (
 	"github.com/diakovliev/2rooms-oak/packages/ui/button"
 	"github.com/diakovliev/2rooms-oak/packages/ui/debuginfo"
 	"github.com/diakovliev/2rooms-oak/packages/utils"
-	"github.com/oakmound/oak/v4"
-	"github.com/oakmound/oak/v4/alg/floatgeom"
-	"github.com/oakmound/oak/v4/entities"
-	oakscene "github.com/oakmound/oak/v4/scene"
+	"github.com/diakovliev/oak/v4"
+	"github.com/diakovliev/oak/v4/alg/floatgeom"
+	"github.com/diakovliev/oak/v4/entities"
+	oakscene "github.com/diakovliev/oak/v4/scene"
 	"github.com/rs/zerolog"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/diakovliev/2rooms-oak/packages/scene/scenes"
-	"github.com/oakmound/oak/v4"
+	"github.com/diakovliev/oak/v4"
 )
 
 type Window struct {

@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/diakovliev/2rooms-oak/packages/utils"
-	"github.com/oakmound/oak/v4"
-	"github.com/oakmound/oak/v4/alg/floatgeom"
-	"github.com/oakmound/oak/v4/alg/intgeom"
-	"github.com/oakmound/oak/v4/entities"
-	"github.com/oakmound/oak/v4/event"
-	"github.com/oakmound/oak/v4/mouse"
-	oakscene "github.com/oakmound/oak/v4/scene"
-	"github.com/oakmound/oak/v4/timing"
+	"github.com/diakovliev/oak/v4"
+	"github.com/diakovliev/oak/v4/alg/floatgeom"
+	"github.com/diakovliev/oak/v4/alg/intgeom"
+	"github.com/diakovliev/oak/v4/entities"
+	"github.com/diakovliev/oak/v4/event"
+	"github.com/diakovliev/oak/v4/mouse"
+	oakscene "github.com/diakovliev/oak/v4/scene"
+	"github.com/diakovliev/oak/v4/timing"
 )
 
 type debugCoords struct {
