@@ -92,13 +92,6 @@ func DebugInfo(ctx *oakscene.Context) {
 
 	panel := entities.New(ctx,
 		entities.WithDimensions(layout.GetFDims()),
-		// entities.WithRenderable(
-		// 	render.NewColorBox(
-		// 		int(layout.W()),
-		// 		int(layout.H()),
-		// 		color.RGBA{R: 60, G: 60, B: 60, A: 255},
-		// 	),
-		// ),
 		entities.WithChild(
 			entities.WithRenderable(layout.Renderable()),
 			entities.WithDimensions(layout.GetFDims()),
