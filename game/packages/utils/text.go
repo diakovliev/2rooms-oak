@@ -185,3 +185,20 @@ func TextFitWidth(text string, width float64, font *render.Font) (lines []string
 
 	return
 }
+
+// TextMeasureRect calculates the bounding rectangle that encompasses the given text when rendered with the specified font.
+//
+// Parameters:
+// - text: the string to be measured.
+// - font: the font used for rendering the text. If nil, the default font will be used.
+//
+// Return type: floatgeom.Rect2, the bounding rectangle of the text.
+func TextMeasureRect(text string, font *render.Font) floatgeom.Rect2 {
+	if font == nil {
+		font = render.DefaultFont()
+	}
+	return floatgeom.Rect2{
+		Min: floatgeom.Point2{0, 0},
+		Max: floatgeom.Point2{float64(font.MeasureString(text).Ceil()), float64(font.Height())},
+	}
+}

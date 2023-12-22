@@ -110,7 +110,7 @@ func debugEntity(ctx *oakscene.Context) {
 		),
 	)
 
-	event.GlobalBind(ctx, oak.ViewportUpdate, func(ev intgeom.Point2) event.Response {
+	event.Bind(ctx, oak.ViewportUpdate, panel, func(e *entities.Entity, ev intgeom.Point2) event.Response {
 		// Move the panel on viewport update
 		panel.SetPos(
 			floatgeom.Point2{
