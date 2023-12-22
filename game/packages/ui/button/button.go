@@ -13,6 +13,7 @@ import (
 	"github.com/oakmound/oak/v4/event"
 	"github.com/oakmound/oak/v4/mouse"
 	"github.com/oakmound/oak/v4/render"
+	"github.com/oakmound/oak/v4/render/mod"
 	oakscene "github.com/oakmound/oak/v4/scene"
 	"golang.org/x/image/colornames"
 )
@@ -73,8 +74,6 @@ type Button struct {
 	colors map[State]color.RGBA
 	// Font in dependance of state
 	fonts map[State]*render.Font
-	// FontsColor in dependance of state
-	fontColors map[State]color.RGBA
 	// Focus flag
 	focus bool
 	// Text
@@ -83,9 +82,13 @@ type Button struct {
 	state State
 	// collision label
 	label collision.Label
+	// round x and y
+	roundX, roundY float64
 
 	sw      *render.Switch
 	swLabel *render.Switch
+
+	callback func()
 }
 
 func New(ctx *oakscene.Context, text string, opts ...Option) (ret Button) {
@@ -97,14 +100,15 @@ func New(ctx *oakscene.Context, text string, opts ...Option) (ret Button) {
 	fontColors := defaultFontColors(colors)
 
 	ret = Button{
-		text:       text,
-		colors:     colors,
-		fontColors: fontColors,
-		fonts:      defaultFonts(fontColors),
-		dims:       defaultDims(),
-		focus:      false,
-		state:      Up,
-		label:      1000,
+		text:   text,
+		colors: colors,
+		fonts:  defaultFonts(fontColors),
+		dims:   defaultDims(),
+		focus:  false,
+		state:  Up,
+		label:  1000,
+		roundX: .1,
+		roundY: .1,
 	}
 	for _, opt := range opts {
 		opt(&ret)
@@ -116,23 +120,26 @@ func New(ctx *oakscene.Context, text string, opts ...Option) (ret Button) {
 		string(Disabled): render.NewColorBox(ret.dims.X(), ret.dims.Y(), ret.colors[Disabled]),
 	})
 
-	ret.swLabel = render.NewSwitch(string(ret.state), map[string]render.Modifiable{
-		string(Up):       ret.fonts[Up].NewText(ret.text, 0, 0).ToSprite(),
-		string(Down):     ret.fonts[Down].NewText(ret.text, 0, 0).ToSprite(),
-		string(Disabled): ret.fonts[Disabled].NewText(ret.text, 0, 0).ToSprite(),
-	})
-
 	entRect := floatgeom.Rect2{
 		Min: floatgeom.Point2{0, 0},
 		Max: floatgeom.Point2{float64(ret.dims.X()), float64(ret.dims.Y())},
 	}
 
-	labelRect := layout2d.AlignRect(
-		layout2d.HCenter|layout2d.VCenter,
-		entRect,
-		utils.TextMeasureRect(ret.text, ret.Font()),
-		0,
-	)
+	textArgs := func(text string, font *render.Font) (str string, x float64, y float64) {
+		textRect := layout2d.AlignRect(
+			layout2d.HCenter|layout2d.VCenter,
+			entRect,
+			utils.TextMeasureRect(text, font),
+			0,
+		)
+		return text, textRect.Min.X(), textRect.Min.Y()
+	}
+
+	ret.swLabel = render.NewSwitch(string(ret.state), map[string]render.Modifiable{
+		string(Up):       ret.fonts[Up].NewText(textArgs(ret.text, ret.fonts[Up])).ToSprite(),
+		string(Down):     ret.fonts[Down].NewText(textArgs(ret.text, ret.fonts[Down])).ToSprite(),
+		string(Disabled): ret.fonts[Disabled].NewText(textArgs(ret.text, ret.fonts[Disabled])).ToSprite(),
+	})
 
 	ret.Entity = entities.New(
 		ctx,
@@ -141,8 +148,8 @@ func New(ctx *oakscene.Context, text string, opts ...Option) (ret Button) {
 		entities.WithDimensions(floatgeom.Point2{float64(ret.dims.X()), float64(ret.dims.Y())}),
 		entities.WithLabel(ret.label),
 		entities.WithDrawLayers(drawLayers),
+		entities.WithMod(mod.CutRound(ret.roundX, ret.roundY)),
 		entities.WithChild(
-			entities.WithRect(labelRect),
 			entities.WithRenderable(ret.swLabel),
 			entities.WithDrawLayers(drawLayers[1:]),
 			entities.WithLabel(ret.label+1),
@@ -168,18 +175,23 @@ func New(ctx *oakscene.Context, text string, opts ...Option) (ret Button) {
 		if ret.state == Disabled {
 			return event.ResponseNone
 		}
+		if ret.callback != nil {
+			ret.callback()
+		}
 		ret.SetState(Up)
 		return event.ResponseNone
 	})
 
-	// event.Bind(ctx, mouse.Drag, ret.Entity, func(e *entities.Entity, me *mouse.Event) event.Response {
-	// 	me.StopPropagation = true
-	// 	if ret.state == Disabled {
-	// 		return event.ResponseNone
-	// 	}
-	// 	ret.SetState(Up)
-	// 	return event.ResponseNone
-	// })
+	event.Bind(ctx, mouse.Drag, ret.Entity, func(e *entities.Entity, me *mouse.Event) event.Response {
+		me.StopPropagation = true
+		if ret.state == Disabled {
+			return event.ResponseNone
+		}
+		if !e.Rect.Contains(me.Point2) {
+			ret.SetState(Up)
+		}
+		return event.ResponseNone
+	})
 
 	return
 }

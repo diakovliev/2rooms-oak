@@ -1,8 +1,7 @@
-package initial
+package debuginfo
 
 import (
 	"fmt"
-	"image/color"
 	"time"
 
 	"github.com/diakovliev/2rooms-oak/packages/utils"
@@ -12,7 +11,6 @@ import (
 	"github.com/oakmound/oak/v4/entities"
 	"github.com/oakmound/oak/v4/event"
 	"github.com/oakmound/oak/v4/mouse"
-	"github.com/oakmound/oak/v4/render"
 	oakscene "github.com/oakmound/oak/v4/scene"
 	"github.com/oakmound/oak/v4/timing"
 )
@@ -79,7 +77,7 @@ func (dfps *debugFPS) String() string {
 	return fmt.Sprintf("FPS: %d", dfps.fps)
 }
 
-func debugEntity(ctx *oakscene.Context) {
+func DebugInfo(ctx *oakscene.Context) {
 
 	debugLayer := 1000
 	debugLayers := []int{debugLayer, debugLayer + 1}
@@ -87,7 +85,6 @@ func debugEntity(ctx *oakscene.Context) {
 	debugMargin := 3.
 
 	layout := utils.NewVTextLayout(nil, debugMaxWidth, debugMargin).Add(
-		utils.S(" Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 		newFPS(ctx),
 		newMouseCoords(ctx),
 		newViewportPosition(ctx),
@@ -95,13 +92,13 @@ func debugEntity(ctx *oakscene.Context) {
 
 	panel := entities.New(ctx,
 		entities.WithDimensions(layout.GetFDims()),
-		entities.WithRenderable(
-			render.NewColorBox(
-				int(layout.W()),
-				int(layout.H()),
-				color.RGBA{R: 60, G: 60, B: 60, A: 255},
-			),
-		),
+		// entities.WithRenderable(
+		// 	render.NewColorBox(
+		// 		int(layout.W()),
+		// 		int(layout.H()),
+		// 		color.RGBA{R: 60, G: 60, B: 60, A: 255},
+		// 	),
+		// ),
 		entities.WithChild(
 			entities.WithRenderable(layout.Renderable()),
 			entities.WithDimensions(layout.GetFDims()),

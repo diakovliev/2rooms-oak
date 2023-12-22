@@ -3,7 +3,7 @@ package window
 import (
 	"context"
 
-	"github.com/diakovliev/2rooms-oak/packages/scene"
+	"github.com/diakovliev/2rooms-oak/packages/scene/scenes"
 	"github.com/oakmound/oak/v4"
 )
 
@@ -15,7 +15,7 @@ type Window struct {
 func New() (ret *Window) {
 	ret = &Window{
 		Window:       oak.NewWindow(),
-		initialScene: scene.Initial,
+		initialScene: scenes.MainMenu,
 	}
 	return
 }

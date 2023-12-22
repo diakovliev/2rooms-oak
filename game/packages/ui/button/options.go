@@ -11,3 +11,16 @@ func Dimensions(w, h int) Option {
 		b.dims = intgeom.Point2{w, h}
 	}
 }
+
+func Round(x, y float64) Option {
+	return func(b *Button) {
+		b.roundX = x
+		b.roundY = y
+	}
+}
+
+func Callback(cb func()) Option {
+	return func(b *Button) {
+		b.callback = cb
+	}
+}

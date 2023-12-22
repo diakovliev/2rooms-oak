@@ -1,4 +1,4 @@
-package initial
+package mainmenu
 
 import (
 	"image/color"
@@ -10,14 +10,14 @@ import (
 	"github.com/diakovliev/2rooms-oak/packages/layout2d/direction"
 	"github.com/diakovliev/2rooms-oak/packages/layout2d/grid"
 	"github.com/diakovliev/2rooms-oak/packages/move2d"
-	"github.com/diakovliev/2rooms-oak/packages/scene"
+	"github.com/diakovliev/2rooms-oak/packages/scene/scenes"
 	"github.com/diakovliev/2rooms-oak/packages/stimer"
 	"github.com/diakovliev/2rooms-oak/packages/ui/button"
-	"github.com/diakovliev/2rooms-oak/packages/window"
+	"github.com/diakovliev/2rooms-oak/packages/ui/debuginfo"
+	"github.com/diakovliev/2rooms-oak/packages/utils"
+	"github.com/oakmound/oak/v4"
 	"github.com/oakmound/oak/v4/alg/floatgeom"
 	"github.com/oakmound/oak/v4/entities"
-	"github.com/oakmound/oak/v4/event"
-	"github.com/oakmound/oak/v4/mouse"
 	oakscene "github.com/oakmound/oak/v4/scene"
 	"github.com/rs/zerolog"
 )
@@ -28,13 +28,13 @@ type Scene struct {
 	End    string
 }
 
-func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
+func New(logger zerolog.Logger, w *oak.Window) (ret *Scene) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	ret = &Scene{
 		logger: logger,
-		Name:   scene.Initial,
-		End:    scene.Debug,
+		Name:   scenes.MainMenu,
+		End:    scenes.Debug,
 	}
 	if err := w.AddScene(ret.Name, ret.build()); err != nil {
 		logger.Panic().Err(err).Msgf("failed to add '%s' scene", ret.Name)
@@ -42,21 +42,54 @@ func New(logger zerolog.Logger, w *window.Window) (ret *Scene) {
 	return
 }
 
-func (s Scene) testMenu(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
-
-	speed := floatgeom.Point2{5, 5}
-	pos := floatgeom.Point2{100, 200}
-
-	layout := direction.Vertical(ctx, pos, speed, 3.).Add(
-		button.New(ctx, "button0", button.Dimensions(100, 20)),
-		button.New(ctx, "button1", button.Dimensions(100, 20)),
-		button.New(ctx, "button2", button.Dimensions(100, 20)),
-		button.New(ctx, "button3", button.Dimensions(100, 20)),
+func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
+	btnWidth := 100
+	btnHeight := 20
+	spaceBetween := 3.
+	viewport := utils.ViewportRect(ctx)
+	menu := direction.Vertical(
+		ctx,
+		viewport.Min,
+		floatgeom.Point2{},
+		spaceBetween,
+	).Add(
+		button.New(
+			ctx,
+			"Tests",
+			button.Dimensions(btnWidth, btnHeight),
+			button.Callback(func() {
+				ctx.Window.GoToScene(s.End)
+			}),
+		),
+		button.New(
+			ctx,
+			"Debug",
+			button.Dimensions(btnWidth, btnHeight),
+			button.Callback(func() {
+				ctx.Window.GoToScene(s.End)
+			}),
+		),
+		button.New(
+			ctx,
+			"Quit",
+			button.Dimensions(btnWidth, btnHeight),
+			button.Callback(func() {
+				ctx.Window.Quit()
+			}),
+		),
 	)
-
-	layout.Apply(layout2d.VCenter)
-
-	return layout
+	menu.Apply(layout2d.VCenter)
+	// Place the menu in the center of a screen
+	menuRect := layout2d.AlignRect(
+		layout2d.HCenter|layout2d.VCenter,
+		viewport,
+		floatgeom.Rect2{
+			Min: viewport.Min,
+			Max: menu.Dims(),
+		}, 0,
+	)
+	menu.SetPos(menuRect.Min)
+	return menu
 }
 
 func (s Scene) testHorizontalEntities(ctx *oakscene.Context, mover *move2d.Manager) common.Entity {
@@ -233,32 +266,30 @@ func (s Scene) testGrid(ctx *oakscene.Context, mover *move2d.Manager) common.Ent
 }
 
 func (s Scene) start(ctx *oakscene.Context) {
+	debuginfo.DebugInfo(ctx)
+	s.makeMenu(ctx)
+	// // cursor
+	// cursorLayer := 100
 
-	debugEntity(ctx)
+	// cursor := entities.New(ctx,
+	// 	//entities.WithUseMouseTree(true),
+	// 	entities.WithRect(floatgeom.NewRect2WH(10, 10, 10, 10)),
+	// 	entities.WithColor(color.RGBA{255, 255, 255, 255}),
+	// 	entities.WithSpeed(floatgeom.Point2{5, 5}),
+	// 	// Over all
+	// 	entities.WithDrawLayers([]int{cursorLayer}),
+	// )
 
-	// cursor
-	cursorLayer := 100
+	// event.Bind(ctx, event.Enter, cursor, func(c *entities.Entity, ev event.EnterPayload) event.Response {
+	// 	return event.ResponseNone
+	// })
 
-	cursor := entities.New(ctx,
-		//entities.WithUseMouseTree(true),
-		entities.WithRect(floatgeom.NewRect2WH(10, 10, 10, 10)),
-		entities.WithColor(color.RGBA{255, 255, 255, 255}),
-		entities.WithSpeed(floatgeom.Point2{5, 5}),
-		// Over all
-		entities.WithDrawLayers([]int{cursorLayer}),
-	)
+	// event.Bind(ctx, mouse.Drag, cursor, func(c *entities.Entity, ev *mouse.Event) event.Response {
+	// 	c.SetPos(ev.Point2)
+	// 	return event.ResponseNone
+	// })
 
-	event.Bind(ctx, event.Enter, cursor, func(c *entities.Entity, ev event.EnterPayload) event.Response {
-		return event.ResponseNone
-	})
-
-	event.Bind(ctx, mouse.Drag, cursor, func(c *entities.Entity, ev *mouse.Event) event.Response {
-		c.SetPos(ev.Point2)
-		return event.ResponseNone
-	})
-
-	mover := move2d.New(ctx)
-	s.testMenu(ctx, mover)
+	//mover := move2d.New(ctx)
 
 	//s.testHorizontalEntities(ctx, mover)
 	//s.testVerticalEntities(ctx, mover)
