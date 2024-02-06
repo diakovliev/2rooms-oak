@@ -55,7 +55,7 @@ func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 		button.New(
 			ctx,
 			"Back",
-			button.Dimensions(btnWidth, btnHeight),
+			button.ISize(btnWidth, btnHeight),
 			button.Callback(func() {
 				ctx.Window.GoToScene(s.End)
 			}),

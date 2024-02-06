@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"image"
+	"image/color"
 	"strings"
 	"unicode"
 
@@ -201,4 +203,12 @@ func TextMeasureRect(text string, font *render.Font) floatgeom.Rect2 {
 		Min: floatgeom.Point2{0, 0},
 		Max: floatgeom.Point2{float64(font.MeasureString(text).Ceil()), float64(font.Height())},
 	}
+}
+
+func ColoredFont(f *render.Font, clr color.RGBA) (ret *render.Font) {
+	ret, _ = f.RegenerateWith(func(fg render.FontGenerator) render.FontGenerator {
+		fg.Color = image.NewUniform(clr)
+		return fg
+	})
+	return
 }

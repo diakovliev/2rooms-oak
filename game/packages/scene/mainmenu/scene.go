@@ -50,7 +50,7 @@ func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 		button.New(
 			ctx,
 			"Grid align test",
-			button.Dimensions(btnWidth, btnHeight),
+			button.ISize(btnWidth, btnHeight),
 			button.Callback(func() {
 				ctx.Window.GoToScene(scenes.GAlign)
 			}),
@@ -58,7 +58,7 @@ func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 		button.New(
 			ctx,
 			"Horizontal align test",
-			button.Dimensions(btnWidth, btnHeight),
+			button.ISize(btnWidth, btnHeight),
 			button.Callback(func() {
 				ctx.Window.GoToScene(scenes.HAlign)
 			}),
@@ -66,7 +66,7 @@ func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 		button.New(
 			ctx,
 			"Vertical align test",
-			button.Dimensions(btnWidth, btnHeight),
+			button.ISize(btnWidth, btnHeight),
 			button.Callback(func() {
 				ctx.Window.GoToScene(scenes.VAlign)
 			}),
@@ -74,7 +74,7 @@ func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 		button.New(
 			ctx,
 			"Quit",
-			button.Dimensions(btnWidth, btnHeight),
+			button.ISize(btnWidth, btnHeight),
 			button.Callback(func() {
 				ctx.Window.Quit()
 			}),
