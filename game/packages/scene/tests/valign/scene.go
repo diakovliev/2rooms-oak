@@ -43,7 +43,7 @@ func New(logger zerolog.Logger, w *oak.Window) (ret *Scene) {
 
 func (s Scene) makeMenu(ctx *oakscene.Context) common.Entity {
 	btnWidth := 100
-	btnHeight := 20
+	btnHeight := 26
 	spaceBetween := 3.
 	viewport := utils.ViewportRect(ctx)
 	menu := direction.Vertical(

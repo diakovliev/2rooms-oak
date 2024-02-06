@@ -16,7 +16,7 @@ type Button struct {
 func New(ctx *oakscene.Context, text string, opts ...Option) (ret *Button) {
 
 	layer := 1000
-	drawLayers := []int{layer + 0, layer + 1}
+	drawLayers := []int{layer + 0, layer + 1, layer + 2, layer + 3}
 
 	button := newData(text)
 	for _, opt := range opts {
@@ -27,14 +27,30 @@ func New(ctx *oakscene.Context, text string, opts ...Option) (ret *Button) {
 		Entity: entities.New(
 			ctx,
 			entities.WithData(button),
-			entities.WithRenderable(button.getSw()),
 			entities.WithUseMouseTree(true),
 			entities.WithDimensions(button.dimensions()),
 			entities.WithDrawLayers(drawLayers),
+			entities.WithRenderable(button.getBackRenderable()),
 			entities.WithMod(mod.CutRound(button.roundX, button.roundY)),
 			entities.WithChild(
-				entities.WithRenderable(button.getSwLabel()),
+				entities.WithDimensions(button.dimensions()),
+				entities.WithRenderable(button.getSwFocus()),
 				entities.WithDrawLayers(drawLayers[1:]),
+				entities.WithMod(mod.CutRound(button.roundX, button.roundY)),
+			),
+			entities.WithChild(
+				entities.WithPosition(button.focusMarginPoint()),
+				entities.WithDimensions(button.innerDimensions()),
+				entities.WithRenderable(button.getSwBack()),
+				entities.WithDrawLayers(drawLayers[2:]),
+				entities.WithMod(mod.CutRound(button.roundX, button.roundY)),
+			),
+			entities.WithChild(
+				entities.WithPosition(button.focusMarginPoint()),
+				entities.WithDimensions(button.innerDimensions()),
+				entities.WithRenderable(button.getSwLabel()),
+				entities.WithDrawLayers(drawLayers[3:]),
+				entities.WithMod(mod.CutRound(button.roundX, button.roundY)),
 			),
 		),
 	}
@@ -68,7 +84,7 @@ func (b *Button) mouseReleaseOn(e *entities.Entity, me *mouse.Event) (ret event.
 	if d.isState(Disabled) {
 		return
 	}
-	d.call()
+	d.callCallback()
 	b.SetState(Up)
 	return
 }
@@ -81,6 +97,9 @@ func (b *Button) mouseDrag(e *entities.Entity, me *mouse.Event) (ret event.Respo
 	}
 	if !e.Rect.Contains(me.Point2) {
 		b.SetState(Up)
+		d.setFocus(NonFocused)
+	} else {
+		d.setFocus(Focused)
 	}
 	return
 }

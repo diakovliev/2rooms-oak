@@ -17,8 +17,12 @@ type data struct {
 	colors map[State]color.RGBA
 	// Font in dependance of state
 	fonts map[State]*render.Font
-	// Focus flag
-	focus bool
+	// Focus margin color
+	focusColor color.RGBA
+	// Focus margin
+	focusMargin float64
+	// Focus state
+	focus Focus
 	// Text
 	text string
 	// State
@@ -26,7 +30,8 @@ type data struct {
 	// round x and y
 	roundX, roundY float64
 
-	sw      *render.Switch
+	swBack  *render.Switch
+	swFocus *render.Switch
 	swLabel *render.Switch
 
 	callback func()
@@ -35,14 +40,16 @@ type data struct {
 func newData(text string) *data {
 	colors := defaultColors()
 	return &data{
-		text:   text,
-		colors: colors,
-		fonts:  defaultFonts(defaultFontColors(colors)),
-		size:   defaultSize(),
-		focus:  false,
-		state:  Up,
-		roundX: .1,
-		roundY: .1,
+		text:        text,
+		colors:      colors,
+		fonts:       defaultFonts(defaultFontColors(colors)),
+		size:        defaultSize(),
+		focusColor:  defaultFocusColor(),
+		focusMargin: 3.,
+		focus:       NonFocused,
+		state:       Up,
+		roundX:      .1,
+		roundY:      .1,
 	}
 }
 
@@ -50,11 +57,29 @@ func (bd data) dimensions() floatgeom.Point2 {
 	return floatgeom.Point2{float64(bd.size.X()), float64(bd.size.Y())}
 }
 
-func (bd data) bounds() floatgeom.Rect2 {
+// func (bd data) bounds() floatgeom.Rect2 {
+// 	return floatgeom.Rect2{
+// 		Min: floatgeom.Point2{0, 0},
+// 		Max: bd.dimensions(),
+// 	}
+// }
+
+func (bd data) labelBounds() floatgeom.Rect2 {
 	return floatgeom.Rect2{
 		Min: floatgeom.Point2{0, 0},
-		Max: bd.dimensions(),
+		Max: bd.innerDimensions(),
 	}
+}
+
+func (bd data) focusMarginPoint() floatgeom.Point2 {
+	return floatgeom.Point2{bd.focusMargin, bd.focusMargin}
+}
+
+func (bd data) innerDimensions() floatgeom.Point2 {
+	margin := bd.focusMarginPoint()
+	return bd.dimensions().
+		Sub(margin).
+		Sub(margin)
 }
 
 func (bd data) isState(state State) bool {
@@ -63,32 +88,56 @@ func (bd data) isState(state State) bool {
 
 func (bd *data) setState(state State) {
 	bd.state = state
-	bd.sw.Set(string(state))
+	bd.swBack.Set(string(state))
 	bd.swLabel.Set(string(state))
 }
 
-func (bd data) call() {
+func (bd *data) setFocus(focus Focus) {
+	bd.focus = focus
+	bd.swFocus.Set(string(focus))
+}
+
+func (bd data) callCallback() {
 	if bd.callback != nil {
 		bd.callback()
 	}
 }
 
-func (bd *data) getSw() *render.Switch {
-	if bd.sw != nil {
-		return bd.sw
+func (bd *data) getBackRenderable() render.Modifiable {
+	return render.NewColorBox(bd.size.X(), bd.size.Y(), bd.colors[Up])
+}
+
+func (bd *data) getSwFocus() *render.Switch {
+	if bd.swFocus != nil {
+		return bd.swFocus
 	}
-	bd.sw = render.NewSwitch(string(bd.state), map[string]render.Modifiable{
-		string(Up):       render.NewColorBox(bd.size.X(), bd.size.Y(), bd.colors[Up]),
-		string(Down):     render.NewColorBox(bd.size.X(), bd.size.Y(), bd.colors[Down]),
-		string(Disabled): render.NewColorBox(bd.size.X(), bd.size.Y(), bd.colors[Disabled]),
+	fid := bd.dimensions()
+	boxDimensions := intgeom.Point2{int(fid.X()), int(fid.Y())}
+	bd.swFocus = render.NewSwitch(string(bd.focus), map[string]render.Modifiable{
+		string(Focused):    render.NewColorBox(boxDimensions.X(), boxDimensions.Y(), bd.focusColor),
+		string(NonFocused): render.NewColorBox(boxDimensions.X(), boxDimensions.Y(), bd.colors[Up]),
 	})
-	return bd.sw
+	return bd.swFocus
+}
+
+func (bd *data) getSwBack() *render.Switch {
+	if bd.swBack != nil {
+		return bd.swBack
+	}
+	fid := bd.innerDimensions()
+	boxDimensions := intgeom.Point2{int(fid.X()), int(fid.Y())}
+	bd.swBack = render.NewSwitch(string(bd.state), map[string]render.Modifiable{
+		string(Up):       render.NewColorBox(boxDimensions.X(), boxDimensions.Y(), bd.colors[Up]),
+		string(Down):     render.NewColorBox(boxDimensions.X(), boxDimensions.Y(), bd.colors[Down]),
+		string(Disabled): render.NewColorBox(boxDimensions.X(), boxDimensions.Y(), bd.colors[Disabled]),
+	})
+	return bd.swBack
 }
 
 func (bd *data) textArgs(text string, font *render.Font) (str string, x float64, y float64) {
 	textRect := layout2d.AlignRect(
 		layout2d.HCenter|layout2d.VCenter,
-		bd.bounds(),
+		bd.labelBounds(),
 		utils.TextMeasureRect(text, font),
 		0,
 	)

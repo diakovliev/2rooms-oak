@@ -17,6 +17,10 @@ func defaultColors() map[State]color.RGBA {
 	}
 }
 
+func defaultFocusColor() color.RGBA {
+	return colornames.Blue
+}
+
 func defaultFontColors(colors map[State]color.RGBA) map[State]color.RGBA {
 	return map[State]color.RGBA{
 		Disabled: utils.InverseColor(colors[Disabled]),
